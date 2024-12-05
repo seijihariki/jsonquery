@@ -5,6 +5,14 @@ export interface ParseTest {
   output: JSONQuery
 }
 
+export interface ParseTestRegex {
+  input: string
+  regex: {
+    expression: string
+    flags?: string
+  }
+}
+
 export interface ParseTestException {
   input: string
   throws: string

@@ -1,6 +1,6 @@
 import Ajv from 'ajv'
 import { describe, expect, test } from 'vitest'
-import type { ParseTestException, ParseTestSuite } from '../test-suite/parse.test'
+import type { ParseTestException, ParseTestRegex, ParseTestSuite } from '../test-suite/parse.test'
 import suite from '../test-suite/parse.test.json'
 import schema from '../test-suite/parse.test.schema.json'
 import { compile } from './compile'
@@ -9,6 +9,10 @@ import type { JSONQueryParseOptions } from './types'
 
 function isTestException(test: unknown): test is ParseTestException {
   return !!test && typeof (test as Record<string, unknown>).throws === 'string'
+}
+
+function isTestRegex(test: unknown): test is ParseTestRegex {
+  return !!test && typeof (test as Record<string, unknown>).regex === 'object'
 }
 
 const groupByCategory = compile(['groupBy', ['get', 'category']])
@@ -26,6 +30,15 @@ for (const [category, testGroups] of Object.entries(testsByCategory)) {
               const { input, throws } = currentTest
 
               expect(() => parse(input)).toThrow(throws)
+            })
+          } else if (isTestRegex(currentTest)) {
+            test(description, () => {
+              const { input, regex } = currentTest
+              const jq = parse(input)
+              
+              expect(jq).toBeInstanceOf(RegExp)
+              expect((jq as RegExp).source).toEqual(regex.expression)
+              expect((jq as RegExp).flags).toEqual(regex.flags || "")
             })
           } else {
             test(description, () => {

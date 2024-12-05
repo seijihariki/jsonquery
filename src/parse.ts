@@ -3,6 +3,7 @@ import {
   startsWithIntRegex,
   startsWithKeywordRegex,
   startsWithNumberRegex,
+  startsWithRegExpRegex,
   startsWithStringRegex,
   startsWithUnquotedPropertyRegex,
   startsWithWhitespaceRegex
@@ -92,6 +93,7 @@ export function parse(query: string, options?: JSONQueryParseOptions): JSONQuery
           parseString() ??
             parseUnquotedString() ??
             parseInteger() ??
+            parseRegExp() ??
             throwError('Property expected')
         )
       }
@@ -146,7 +148,7 @@ export function parse(query: string, options?: JSONQueryParseOptions): JSONQuery
         }
 
         const key =
-          parseString() ?? parseUnquotedString() ?? parseInteger() ?? throwError('Key expected')
+          parseString() ?? parseUnquotedString() ?? parseInteger() ?? parseRegExp() ?? throwError('Key expected')
 
         skipWhitespace()
         eatChar(':')
@@ -186,19 +188,21 @@ export function parse(query: string, options?: JSONQueryParseOptions): JSONQuery
       return ['array', ...array]
     }
 
-    return parseString() ?? parseNumber() ?? parseKeyword()
+    return parseString() ?? parseNumber()  ?? parseRegExp() ?? parseKeyword()
   }
 
-  const parseString = () => parseRegex(startsWithStringRegex, JSON.parse)
+  const parseRegExp = () => parseRegex(startsWithRegExpRegex, (m) => new RegExp(m[1], m[2]))
+  
+  const parseString = () => parseRegex(startsWithStringRegex, (m) => JSON.parse(m[0]))
 
-  const parseUnquotedString = () => parseRegex(startsWithUnquotedPropertyRegex, (text) => text)
+  const parseUnquotedString = () => parseRegex(startsWithUnquotedPropertyRegex, (m) => m[0])
 
-  const parseNumber = () => parseRegex(startsWithNumberRegex, JSON.parse)
+  const parseNumber = () => parseRegex(startsWithNumberRegex, (m) => JSON.parse(m[0]))
 
-  const parseInteger = () => parseRegex(startsWithIntRegex, JSON.parse)
+  const parseInteger = () => parseRegex(startsWithIntRegex, (m) => JSON.parse(m[0]))
 
   const parseKeyword = () => {
-    const keyword = parseRegex(startsWithKeywordRegex, JSON.parse)
+    const keyword = parseRegex(startsWithKeywordRegex, (m) => JSON.parse(m[0]))
     if (keyword !== undefined) {
       return keyword
     }
@@ -215,15 +219,15 @@ export function parse(query: string, options?: JSONQueryParseOptions): JSONQuery
     }
   }
 
-  const parseRegex = <T = string>(regex: RegExp, callback: (match: string) => T): T | undefined => {
+  const parseRegex = <T = string>(regex: RegExp, callback: (match: RegExpMatchArray) => T): T | undefined => {
     const match = query.substring(i).match(regex)
     if (match) {
       i += match[0].length
-      return callback(match[0])
+      return callback(match)
     }
   }
 
-  const skipWhitespace = () => parseRegex(startsWithWhitespaceRegex, (text) => text)
+  const skipWhitespace = () => parseRegex(startsWithWhitespaceRegex, (m) => m[0])
 
   const eatChar = (char: string) => {
     if (query[i] !== char) {

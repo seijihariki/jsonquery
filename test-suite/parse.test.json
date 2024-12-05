@@ -356,6 +356,49 @@
       "tests": [{ "input": "\"hello", "throws": "Value expected (pos: 0)" }]
     },
     {
+      "category": "regexp",
+      "description": "should parse a regex",
+      "tests": [
+        {
+          "input": "/hello/",
+          "regex": {
+            "expression": "hello"
+          }
+        },
+        {
+          "input": "/\\\/\"\\\//",
+          "regex": {
+            "expression": "\\\/\"\\\/"
+          }
+        },
+        {
+          "input": "/^\"(?:[^\"\\\\]|\\\\.)*\"/gm",
+          "regex": {
+            "expression": "^\"(?:[^\"\\\\]|\\\\.)*\"",
+            "flags": "gm"
+          }
+        }
+      ]
+    },
+    {
+      "category": "regexp",
+      "description": "should throw an error on invalid regex expression",
+      "tests": [
+        {
+          "input": "/hello",
+          "throws": "Value expected (pos: 0)"
+        },
+        {
+          "input": "/he(llo/",
+          "throws": "Invalid regular expression: /he(llo/: Unterminated group"
+        },
+        {
+          "input": "/^*hello/",
+          "throws": "Invalid regular expression: /^*hello/: Nothing to repeat"
+        }
+      ]
+    },
+    {
       "category": "number",
       "description": "should parse a number",
       "tests": [

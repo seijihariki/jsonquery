@@ -30,6 +30,22 @@
                   "type": "object",
                   "properties": {
                     "input": { "type": "string" },
+                    "regex": {
+                      "type": "object",
+                      "properties": {
+                        "expression": { "type": "string" },
+                        "flags": { "type": "string" }
+                      },
+                      "required": ["expression"]
+                    }
+                  },
+                  "required": ["input", "regex"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "input": { "type": "string" },
                     "throws": { "type": "string" }
                   },
                   "required": ["input", "throws"],

@@ -206,7 +206,7 @@ export const functions: FunctionBuildersMap = {
     (data: T[]) =>
       data.join(separator),
 
-  split: buildFunction((text: string, separator?: string) =>
+  split: buildFunction((text: string, separator?: string | RegExp) =>
     separator !== undefined ? text.split(separator) : text.trim().split(/\s+/)
   ),
 
@@ -279,7 +279,7 @@ export const functions: FunctionBuildersMap = {
 
     return (data: unknown) => !_in(data)
   },
-  regex: (path: JSONQuery, expression: string, options?: string) => {
+  regex: (path: JSONQuery, expression: string | RegExp, options?: string) => {
     const regex = new RegExp(expression, options)
     const getter = compile(path)
 
